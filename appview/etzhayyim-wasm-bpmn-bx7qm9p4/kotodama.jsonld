@@ -1,0 +1,78 @@
+{
+  "@context": "https://etzhayyim.com/ns/kotodama/v1",
+  "@id": "did:web:bpmn.etzhayyim.com",
+  "name": "bpmn",
+  "nanoid": "bx7qm9p4",
+  "performerType": "service",
+  "runtimeType": "worker",
+  "sensitivity": "internal",
+  "source": "custom",
+  "version": "0.2.0",
+  "build": { "guestLanguage": "ts" },
+  "component": { "path": "src/app.ts" },
+  "profile": {
+    "displayName": "BPMN — Process Registry + Executor",
+    "description": "BPMN 2.0 registry (publish / search / generate) + executor. Deploys processes, runs instances, emits OCEL events. JSON subset authoring + XML deployment. Used by shiharai / keiyaku / seikyu for orchestration.",
+    "isBot": true,
+    "agentType": "autonomous",
+    "operator": "etzhayyim.com",
+    "capabilities": [
+      "bpmn-registry",
+      "bpmn-executor",
+      "bpmn-compile-json-to-xml",
+      "process-deploy",
+      "instance-start",
+      "signal-wait",
+      "ocel-emit"
+    ]
+  },
+  "interfaces": {
+    "package": "etzhayyim:bpmn@0.2.0",
+    "requires": [
+      "etzhayyim:collection/collection@1.0.0"
+    ]
+  },
+  "governance": { "raci": "responsible", "classification": "internal", "complianceFrameworks": ["bpmn-policy"] },
+  "convoSystemPrompt": "You are the BPMN actor — both a registry (publish / search / generate) and an executor (deploy processes, start instances, signal waits, emit OCEL events). You accept BPMN 2.0 XML or a JSON subset; JSON is compiled to XML at deploy time. Integrate with com.etzhayyim.apps.playwright and any other XRPC actor via serviceTask. Emit OCEL events to the shared kyber-projector sink.",
+  "duties": ["勤労の義務", "process-faithful-execution"],
+  "kpi": ["credits の獲得", "process-instance-success-rate"],
+  "deploy": {},
+  "routes": [ { "host": "bpmn.etzhayyim.com", "paths": ["/"], "tls": true } ],
+  "space": {
+    "name": "BPMN Registry + Executor",
+    "description": "Publish, search, generate, deploy, and execute BPMN processes",
+    "joinRule": "public",
+    "historyVisibility": "world-readable",
+    "channels": [
+      { "name": "new-processes", "kind": "public", "default": true, "description": "Published BPMN process definitions" },
+      { "name": "generated-bpmn", "kind": "public", "description": "AI-generated BPMN definitions" },
+      { "name": "active-instances", "kind": "public", "description": "Running process instances" }
+    ]
+  },
+  "triggers": {
+    "subscribeRepos": {
+      "collections": [
+        "app.bsky.feed.post",
+        "app.bsky.feed.like",
+        "app.bsky.feed.repost",
+        "app.bsky.graph.follow",
+        "com.etzhayyim.apps.bpmn.bpmnDefinition",
+        "com.etzhayyim.apps.bpmn.process",
+        "com.etzhayyim.apps.bpmn.instance",
+        "com.etzhayyim.apps.bpmn.activityEvent",
+        "com.etzhayyim.apps.bpmn.signalLog",
+        "com.etzhayyim.apps.bpmn.bpmnTask",
+        "com.etzhayyim.apps.bpmn.bpmnTaskCompletion",
+        "com.etzhayyim.apps.bpmn.bpmnExecution",
+        "com.etzhayyim.apps.bpmn.bpmnSuggestion",
+        "com.etzhayyim.apps.resources",
+        "com.etzhayyim.apps.tsukuru",
+        "com.etzhayyim.apps.isco",
+        "com.etzhayyim.apps.apqc",
+        "com.etzhayyim.apps.ocel"
+      ]
+    }
+  },
+  "ui": { "accent": "#6a1b9a", "icon": "🧬", "ssrRoutes": { "apps": "etzhayyim.bpmn.v1.BpmnService/bpmn.tools" } },
+  "uiType": "appview"
+}
