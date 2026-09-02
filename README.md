@@ -34,7 +34,9 @@ correct.
 
 ## Layout
 
-Thirty-five tracked files (thirty-three, plus this README and `docs/operator-quickstart.md`):
+Thirty-four tracked files (`git ls-files | wc -l`, re-counted 2026-09-03 —
+the Svelte-to-ClojureScript migration in `c4e2244` changed the count, and the
+rows marked below were re-measured with it):
 
 ```
 kotoba/                          13 functions, 12 tests (see docs/operator-quickstart.md)
@@ -50,13 +52,26 @@ kotoba/                          13 functions, 12 tests (see docs/operator-quick
 xrpc-adapter/                    Cloudflare Worker, 13 routes, route = bpmn.etzhayyim.com/xrpc/*
 appview/etzhayyim-wasm-bpmn-bx7qm9p4/
   src/app.ts                     kotodama-host-sdk actor, 10 commands, D1/R2
-  src/engine.ts                  the BPMN subset runtime
-  svelte/                        Vite + Svelte scaffold; App.svelte is a one-line placeholder
+  src/engine.ts                  expression evaluator + the `bpmn-elements`
+                                 driver (`runEngine`). The JSON authoring
+                                 subset's ten step types are in `app.ts`
+  cljs/                          reagent + re-frame + jp-go-dds shell; replaced
+                                 the Svelte scaffold in `c4e2244`
   kotodama.jsonld                actor manifest (did:web:bpmn.etzhayyim.com)
 CLAUDE.md                        describes a different, earlier design (see below)
 MIGRATION-TODO.md                names app.ts as the substrate-boundary violation
 migration.edn                    provenance: etzhayyim/root 60-apps/etzhayyim-project-bpmn @ 7a08afb
+test/cross_plane_test.cljs       the disagreements below, checked instead of
+                                 narrated (`nbb test/cross_plane_test.cljs`)
 ```
+
+The prose in this README is the only place several of these facts are
+written down, and prose does not notice when it stops being true — the file
+count and the `svelte/` row above were both stale within nine days. The
+cross-plane facts (routes against exports, the two NSID bases, the two JSON
+vocabularies, the manifest against the tree) are checked by
+`test/cross_plane_test.cljs`, which exits 0, 1, or **2 when it cannot see
+what it reads** — a checker blind to its input must not report "clean".
 
 ## Read this before trusting the rest of the tree
 
