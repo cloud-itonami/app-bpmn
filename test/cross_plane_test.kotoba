@@ -1,4 +1,4 @@
-#!/usr/bin/env nbb
+#!/usr/bin/env kbb
 ;; cross_plane_test.cljs — the three planes' declarative surfaces, checked
 ;; against each other.
 ;;
@@ -40,7 +40,7 @@
 ;;      measured. A checker that cannot see its input must not answer "clean";
 ;;      that is the failure mode CLAUDE.md's six questions are about.
 ;;
-;; Run: nbb test/cross_plane_test.cljs
+;; Run: kbb --backend sci test/cross_plane_test.cljk
 
 (ns cross-plane-test
   (:require ["node:fs" :as fs]

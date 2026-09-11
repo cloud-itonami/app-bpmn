@@ -62,7 +62,7 @@ CLAUDE.md                        describes a different, earlier design (see belo
 MIGRATION-TODO.md                names app.ts as the substrate-boundary violation
 migration.edn                    provenance: etzhayyim/root 60-apps/etzhayyim-project-bpmn @ 7a08afb
 test/cross_plane_test.cljs       the disagreements below, checked instead of
-                                 narrated (`nbb test/cross_plane_test.cljs`)
+                                 narrated (`kbb --backend sci test/cross_plane_test.cljk`)
 ```
 
 The prose in this README is the only place several of these facts are
