@@ -7,11 +7,11 @@
       "enabled": true,
       "enabled_toolsets": null,
       "id": "252275796a4c",
-      "model": "qwen3.8-27b-whitehacker",
+      "model": "murakumo/free",
       "name": "industry-ontology-bpmn-tick",
       "no_agent": false,
       "prompt": "SOUL.md に従い、全産業 (ISIC 21 大分類) の現状分析を行い、FRONTIER 行が指す未整備産業について、オントロジー / BPMN プロセス / Governor 改善のいずれか 1 提案を起票せよ。",
-      "provider": "kotoba",
+      "provider": "murakumo",
       "schedule": {
         "kind": "cron",
         "expr": "0 6 * * *",
