@@ -95,7 +95,7 @@ kotoba/src/process.ts:313:  // Placeholder: simple hash for demo
 Line 264 is `executePipeline`, 277 is `analyzeProcess`, 313 is the hash
 `compileBpmn` uses for its manifest digest.
 
-**2d. `CLAUDE.md` describes a design that is not in the tree:**
+**2d. `AGENTS.md` describes a design that is not in the tree:**
 
 ```bash
 grep -cE 'publish_bpmn|search_bpmns|generate_bpmn|bpmn_definitions_current' \
@@ -109,7 +109,7 @@ ls: 60-apps: No such file or directory
 ls: wasm: No such file or directory
 ```
 
-Zero hits for any of the operations or the Arrow table `CLAUDE.md` names;
+Zero hits for any of the operations or the Arrow table `AGENTS.md` names;
 neither of the two directory prefixes its build steps `cd` into exists.
 
 **2e. The Charter rider is a dangling symlink:**
@@ -337,7 +337,7 @@ Deliberately, because none of it was walked:
 - **The Svelte UI.** `appview/…/svelte/` depends on
   `@etzhayyim/design-system: "workspace:*"` (same problem as §7) and its
   `App.svelte` is a one-line placeholder.
-- **`CLAUDE.md`'s build steps.** They `cd` into `60-apps/…/wasm/…` and
+- **`AGENTS.md`'s build steps.** They `cd` into `60-apps/…/wasm/…` and
   call `e7m`; neither the paths (§2d) nor the tool exist here.
 - **Anything against a real PDS.** Every step above runs against
   `@etzhayyim/sdk-mock`. No network substrate is contacted, and no real DID
