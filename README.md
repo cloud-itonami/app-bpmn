@@ -58,7 +58,7 @@ appview/etzhayyim-wasm-bpmn-bx7qm9p4/
   cljs/                          reagent + re-frame + jp-go-dds shell; replaced
                                  the Svelte scaffold in `c4e2244`
   kotodama.jsonld                actor manifest (did:web:bpmn.etzhayyim.com)
-CLAUDE.md                        describes a different, earlier design (see below)
+AGENTS.md                        describes a different, earlier design (see below)
 MIGRATION-TODO.md                names app.ts as the substrate-boundary violation
 migration.edn                    provenance: etzhayyim/root 60-apps/etzhayyim-project-bpmn @ 7a08afb
 test/cross_plane_test.cljs       the disagreements below, checked instead of
@@ -83,8 +83,8 @@ in `docs/operator-quickstart.md` §2.
 
 | What a reader would conclude | What the tree actually contains |
 |---|---|
-| `CLAUDE.md`: bpmn.etzhayyim.com is a BPMN *repository* — `publish_bpmn` / `search_bpmns` / `generate_bpmn` over an Arrow table `bpmn_definitions_current`, with source domains `resources` / `tsukuru` / `isco` / `apqc` | **None of those identifiers appear anywhere in the source** (`grep -c` = 0 in `app.ts`). The actor here is a registry **+ executor** (`deployProcess` / `startInstance` / `signalInstance` …) over D1 and R2. `CLAUDE.md` describes a design this tree does not implement |
-| `CLAUDE.md` component table: `wasm/etzhayyim-wasm-bpmn-bx7qm9p4/`; build steps `cd 60-apps/…/wasm/…/svelte && pnpm build && e7m actor build .` | There is **no `wasm/` and no `60-apps/`**. The component is under `appview/`. No `e7m` tool is referenced anywhere else in the tree |
+| `AGENTS.md`: bpmn.etzhayyim.com is a BPMN *repository* — `publish_bpmn` / `search_bpmns` / `generate_bpmn` over an Arrow table `bpmn_definitions_current`, with source domains `resources` / `tsukuru` / `isco` / `apqc` | **None of those identifiers appear anywhere in the source** (`grep -c` = 0 in `app.ts`). The actor here is a registry **+ executor** (`deployProcess` / `startInstance` / `signalInstance` …) over D1 and R2. `AGENTS.md` describes a design this tree does not implement |
+| `AGENTS.md` component table: `wasm/etzhayyim-wasm-bpmn-bx7qm9p4/`; build steps `cd 60-apps/…/wasm/…/svelte && pnpm build && e7m actor build .` | There is **no `wasm/` and no `60-apps/`**. The component is under `appview/`. No `e7m` tool is referenced anywhere else in the tree |
 | `kotoba/README.md`: 13 XRPC commands, "All 13 canonical bpmn lexicons now have kotoba reference impl", `validateXml` = "XSD + Schematron validation", `analyzeProcess` = "OCEL process mining (KPIs + LLM)" | 13 functions exist and are exported. `validateXml` is four substring checks (`<bpmn:process` present, starts with `<`, open/close tag counts match) — no XSD, no Schematron. `analyzeProcess` returns `eventCount: 0, caseCount: 0` unconditionally and says so in a comment (`// Placeholder`). `executePipeline` is likewise a placeholder. `compileBpmn` hashes with a comment "simple hash for demo" |
 | `kotoba/README.md` links `../../../90-docs/adr/2605203000-…` and sibling `../../etzhayyim-project-anime/kotoba/` | Neither path exists from this repo. They resolved inside `etzhayyim/root` |
 | `kotoba/CHARTER-RIDER.md` is a file | It is a symlink to `../../../CHARTER-RIDER.md`, which resolved to the root of `etzhayyim/root` and **dangles here** (`test -e` fails). `NOTICE` still says "see CHARTER-RIDER.md" |
