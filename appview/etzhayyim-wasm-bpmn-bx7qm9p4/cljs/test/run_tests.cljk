@@ -1,0 +1,8 @@
+(ns run-tests
+  "kbb 実行のテスト runner（guest 側ゲートは amu test、3 ターゲット）。"
+  (:require [clojure.test :refer [run-tests]]
+            [bpmn-frontend.process-test]))
+
+(let [{:keys [fail error]} (run-tests 'bpmn-frontend.process-test)]
+  (when (pos? (+ fail error))
+    (set! (.-exitCode js/process) 1)))

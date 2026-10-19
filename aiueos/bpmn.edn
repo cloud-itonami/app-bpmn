@@ -1,0 +1,24 @@
+;; app-bpmn — itonami（dapp）の aiueos アプリ記述子
+;; （形は kotoba-lang/aiueos/examples/apps/notes.edn 準拠）。
+;; 実装の正本: bpmn_process.cljk / docs/bpmn-aiueos-dapp.md。
+;;
+;; 判断コア guest（:effects #{}）は sequence flow 集合の判定。
+;; publish / generate / SQL はこの外。実行 host は kototama-browser-host-v1
+;; （vector パラメータのため KIR v4 / typed ABI、amu selfhost）。
+;; aiueos session/grant 配線は L2 テストで実証（kotoba-lang/aiueos の
+;; itonami-dapp-selfhost-test 系）。app catalog 載せは未実装。
+{:aiueos/component :app/bpmn
+ :aiueos/kind :app
+ :aiueos/trust :untrusted
+ :aiueos/source "bpmn_process.cljk"
+ :aiueos/wasm "bpmn_process.wasm"
+ :aiueos/entry "main"
+ :aiueos/args []
+ :aiueos/imports #{}
+ :aiueos/exports #{:app/main
+                   :app/validate-flow-set
+                   :app/roots-count
+                   :app/sinks-count
+                   :app/path-exists?}
+ :aiueos/effects #{}
+ :aiueos/limits {:memory-pages 16 :fuel 5000000}}

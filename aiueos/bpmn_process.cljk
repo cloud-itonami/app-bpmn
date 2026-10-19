@@ -1,0 +1,170 @@
+(ns bpmn.process
+  "app-bpmn プロセス判定コア — itonami dapp bundle（pure, :effects #{}）。
+
+  BPMN の sequence flow 集合の判定: flow 集合の検証、start/end event の数、
+  経路の到達可否。publish / generate / SQL はこの guest の外
+  （design 正本: docs/bpmn-aiueos-dapp.md）。
+
+  バッファ布局: edges は [from-node to-node] × n。node は i64 の連番 id。
+
+  validate-flow-set のエラービット（0 = 正常。条件は重複しうる）:
+    1 :empty        flow が無い
+    2 :bad-length   長さが 2 の倍数でない（壊れた入力）
+    4 :self-edge    from = to
+    8 :duplicate    同一 (from,to) の重複
+
+  roots-count / sinks-count: 入り边の無い node（start event 候補）と
+  出り边の無い node（end event 候補）の数。
+
+  path-exists?: from から to への有向経路の有無。再帰の予算は 2*|E|+2 で
+  切る（単純経路の長さの上限。cycle があっても停止する。超過は 0 と
+  返す — 判定の用途上、この境界は docs に明記した）。
+
+  実行 host: kototama-browser-host-v1（amu selfhost。vector パラメータの
+  ため KIR v4 / typed ABI）。test はゼロ引数 test-*、戻り 1/0。"
+  (:export [main validate-flow-set roots-count sinks-count path-exists?
+            test-valid-flow-set test-empty test-bad-length test-self-edge
+            test-duplicate test-roots-sinks test-path-exists]))
+
+(defn main [] :i64
+  0)
+
+;; --- flow 集合の検証 -------------------------------------------------------
+
+(defn validate-flow-set [edges :vector-i64] :i64
+  (let [n (vector-count edges)]
+    (if (= n 0)
+      1
+      (if (= n (* 2 (quot n 2)))
+        (flow-bits edges n 0 0)
+        2))))
+
+(defn- self-or-dup [edges :vector-i64 n :i64 i :i64] :i64
+  ;; edge i/2 が self か、それ以前の edge と重複ならビットを返す
+  (let [a (vector-at edges i)
+        b (vector-at edges (+ i 1))]
+    (if (= a b)
+      4
+      (scan-dup edges n 0 i a b))))
+
+(defn- scan-dup [edges :vector-i64 n :i64 j :i64 i :i64 a :i64 b :i64] :i64
+  (if (< j i)
+    (if (and (= (vector-at edges j) a) (= (vector-at edges (+ j 1)) b))
+      8
+      (scan-dup edges n (+ j 2) i a b))
+    0))
+
+(defn- flow-bits [edges :vector-i64 n :i64 i :i64 bad :i64] :i64
+  (if (< i n)
+    (let [b (self-or-dup edges n i)]
+      (flow-bits edges n (+ i 2) (+ bad b)))
+    bad))
+
+;; --- start / end event 候補の数 -------------------------------------------
+
+(defn roots-count [edges :vector-i64] :i64
+  (roots-aux edges (vector-count edges) 0 0))
+
+(defn- roots-aux [edges :vector-i64 n :i64 i :i64 acc :i64] :i64
+  ;; node は最初の from 出現でのみ数える（複数の出り边で二重に数えない）
+  (if (< i n)
+    (roots-aux edges n (+ i 2)
+               (if (and (= (first-from? edges i (vector-at edges i)) 1)
+                        (= (has-incoming edges n (vector-at edges i) 0) 0))
+                 (+ acc 1)
+                 acc))
+    acc))
+
+(defn- first-from? [edges :vector-i64 j :i64 node :i64] :i64
+  ;; j より前に同じ from が無ければ 1
+  (if (= j 0)
+    1
+    (if (= (vector-at edges (- j 2)) node)
+      0
+      (first-from? edges (- j 2) node))))
+
+(defn- has-incoming [edges :vector-i64 n :i64 node :i64 j :i64] :i64
+  (if (< j n)
+    (if (= (vector-at edges (+ j 1)) node)
+      1
+      (has-incoming edges n node (+ j 2)))
+    0))
+
+(defn sinks-count [edges :vector-i64] :i64
+  (sinks-aux edges (vector-count edges) 0 0))
+
+(defn- sinks-aux [edges :vector-i64 n :i64 i :i64 acc :i64] :i64
+  ;; node は最初の to 出現でのみ数える（複数の入り边で二重に数えない）
+  (if (< i n)
+    (sinks-aux edges n (+ i 2)
+               (if (and (= (first-to? edges i (vector-at edges (+ i 1))) 1)
+                        (= (has-outgoing edges n (vector-at edges (+ i 1)) 0) 0))
+                 (+ acc 1)
+                 acc))
+    acc))
+
+(defn- first-to? [edges :vector-i64 j :i64 node :i64] :i64
+  ;; j より前に同じ to が無ければ 1
+  (if (= j 0)
+    1
+    (if (= (vector-at edges (- j 1)) node)
+      0
+      (first-to? edges (- j 2) node))))
+
+(defn- has-outgoing [edges :vector-i64 n :i64 node :i64 j :i64] :i64
+  (if (< j n)
+    (if (= (vector-at edges j) node)
+      1
+      (has-outgoing edges n node (+ j 2)))
+    0))
+
+;; --- 経路の到達可否 ---------------------------------------------------------
+
+(defn path-exists? [edges :vector-i64 from :i64 to :i64] :i64
+  (if (= from to)
+    1
+    (path-aux edges (vector-count edges) from to (+ (* 2 (quot (vector-count edges) 2)) 2))))
+
+(defn- path-aux [edges :vector-i64 n :i64 from :i64 to :i64 budget :i64] :i64
+  (if (< budget 1)
+    0
+    (path-step edges n from to 0 (- budget 1))))
+
+(defn- path-step [edges :vector-i64 n :i64 from :i64 to :i64 j :i64 budget :i64] :i64
+  (if (< j n)
+    (if (= (vector-at edges j) from)
+      (if (= (vector-at edges (+ j 1)) to)
+        1
+        (if (= (path-aux edges n (vector-at edges (+ j 1)) to budget) 1)
+          1
+          (path-step edges n from to (+ j 2) budget)))
+      (path-step edges n from to (+ j 2) budget))
+    0))
+
+;; --- tests（戻り 1 = pass） ------------------------------------------------
+
+(defn test-valid-flow-set [] :i64
+  (if (= (validate-flow-set [0 1 1 2]) 0) 1 0))
+
+(defn test-empty [] :i64
+  (if (= (validate-flow-set []) 1) 1 0))
+
+(defn test-bad-length [] :i64
+  (if (= (validate-flow-set [0 1 2]) 2) 1 0))
+
+(defn test-self-edge [] :i64
+  (if (= (validate-flow-set [0 1 1 1]) 4) 1 0))
+
+(defn test-duplicate [] :i64
+  (if (= (validate-flow-set [0 1 0 1]) 8) 1 0))
+
+(defn test-roots-sinks [] :i64
+  ;; 0→1→2 と 3→2: roots {0,3} = 2、sinks {2} = 1
+  (if (= (+ (roots-count [0 1 1 2 3 2]) (* 10 (sinks-count [0 1 1 2 3 2])))
+         12)
+    1 0))
+
+(defn test-path-exists [] :i64
+  (if (= (+ (path-exists? [0 1 1 2] 0 2) (path-exists? [0 1 1 2] 2 0))
+         1)
+    1 0))
