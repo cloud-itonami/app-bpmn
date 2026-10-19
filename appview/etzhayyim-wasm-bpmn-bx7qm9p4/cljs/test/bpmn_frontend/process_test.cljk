@@ -1,0 +1,25 @@
+(ns bpmn-frontend.process-test
+  "process の parity fixture。数値は aiueos/bpmn_process.cljk の test-* と
+  一致（guest が 3 ターゲットで同じ期待を通す）。"
+  (:require [clojure.test :refer [deftest is testing]]
+            [bpmn-frontend.process :as p]))
+
+(deftest validate-flow-set-parity
+  (testing "guest の test-valid-flow-set / test-empty / test-bad-length と同じ"
+    (is (= 0 (p/validate-flow-set [{:from 0 :to 1} {:from 1 :to 2}])))
+    (is (= 1 (p/validate-flow-set []))))
+  (testing "guest の test-self-edge / test-duplicate と同じ"
+    (is (= 4 (p/validate-flow-set [{:from 0 :to 1} {:from 1 :to 1}])))
+    (is (= 8 (p/validate-flow-set [{:from 0 :to 1} {:from 0 :to 1}])))))
+
+(deftest roots-sinks-parity
+  (testing "guest の test-roots-sinks と同じ（roots 2、sinks 1）"
+    (let [flows [{:from 0 :to 1} {:from 1 :to 2} {:from 3 :to 2}]]
+      (is (= 2 (p/roots-count flows)))
+      (is (= 1 (p/sinks-count flows))))))
+
+(deftest path-exists-parity
+  (testing "guest の test-path-exists と同じ（1 と 0）"
+    (let [flows [{:from 0 :to 1} {:from 1 :to 2}]]
+      (is (= 1 (p/path-exists? flows 0 2)))
+      (is (= 0 (p/path-exists? flows 2 0))))))

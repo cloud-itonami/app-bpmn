@@ -1,0 +1,53 @@
+(ns bpmn-frontend.process
+  "BPMN プロセス判定（appview 側 adapter）。flow 検証・start/end 数・経路到達。
+
+  セマンティクスの正本は aiueos/bpmn_process.cljk（itonami dapp bundle。
+  `amu test` が jvm-kir / js / wasm の 3 ターゲットで同じ fixture を実行）。
+  この namespace は map API の adapter で、期待値は guest の test-* と一致
+  （parity fixture）。判定は pure、副作用なし。")
+
+(def error-bits
+  {:empty 1
+   :bad-length 2
+   :self-edge 4
+   :duplicate 8})
+
+(defn validate-flow-set
+  "flow のシーケンス（各 {:from f :to t}）を検証しエラービットを返す。"
+  [flows]
+  (if (empty? flows)
+    (:empty error-bits)
+    (let [pairs (map (juxt :from :to) flows)]
+      (reduce + 0
+        (for [[i [a b]] (map-indexed vector pairs)]
+          (cond
+            (= a b) (:self-edge error-bits)
+            (some #(= % [a b]) (take i pairs)) (:duplicate error-bits)
+            :else 0))))))
+
+(defn roots-count
+  "入り flow の無い node の数（start event 候補。重複数えなし）。"
+  [flows]
+  (let [froms (set (map :from flows))
+        tos (set (map :to flows))]
+    (count (remove tos froms))))
+
+(defn sinks-count
+  "出り flow の無い node の数（end event 候補。重複数えなし）。"
+  [flows]
+  (let [froms (set (map :from flows))
+        tos (set (map :to flows))]
+    (count (remove froms tos))))
+
+(defn path-exists?
+  "from から to への有向経路の有無（1/0）。cycle があっても停止する。"
+  [flows from to]
+  (let [adj (reduce (fn [m flow]
+                      (update m (:from flow) (fnil conj []) (:to flow)))
+                    {} flows)]
+    (letfn [(go [node seen]
+              (cond
+                (= node to) true
+                (contains? seen node) false
+                :else (some #(go % (conj seen node)) (get adj node []))))]
+      (if (go from #{}) 1 0))))
